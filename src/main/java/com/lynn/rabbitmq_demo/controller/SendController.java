@@ -11,9 +11,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
 
-import static com.lynn.rabbitmq_demo.properties.RabbitProperties.FANOUT_EXCHANGE_NAME;
-import static com.lynn.rabbitmq_demo.properties.RabbitProperties.SIMPLE_QUEUE_NAME;
-import static com.lynn.rabbitmq_demo.properties.RabbitProperties.WORK_QUEUE_NAME;
+import static com.lynn.rabbitmq_demo.properties.RabbitExchangeProperties.DIRECT_EXCHANGE_NAME;
+import static com.lynn.rabbitmq_demo.properties.RabbitExchangeProperties.FANOUT_EXCHANGE_NAME;
+import static com.lynn.rabbitmq_demo.properties.RabbitQueueProperties.SIMPLE_QUEUE_NAME;
+import static com.lynn.rabbitmq_demo.properties.RabbitQueueProperties.WORK_QUEUE_NAME;
 
 /**
  * @Author: Lynn on 2024/9/5
@@ -44,11 +45,16 @@ public class SendController {
   }
 
   @RequestMapping(value = "/fanout", method = {RequestMethod.GET, RequestMethod.POST})
-  public void sendFanoutMessage(@RequestBody Map<String, String> map) throws InterruptedException {
+  public void sendFanoutMessage(@RequestBody Map<String, String> map) {
     String message = MapUtils.getString(map, "message");
-    for (int i = 0; i < 30; i++) {
-      rabbitTemplate.convertAndSend(FANOUT_EXCHANGE_NAME, "",message + "--" + i);
-      Thread.sleep(20);
-    }
+    rabbitTemplate.convertAndSend(FANOUT_EXCHANGE_NAME, "", message);
   }
+
+  @RequestMapping(value = "/direct", method = {RequestMethod.GET, RequestMethod.POST})
+  public void sendDirectMessage(@RequestBody Map<String, String> map) {
+    String message = MapUtils.getString(map, "message");
+    String key = MapUtils.getString(map, "key");
+    rabbitTemplate.convertAndSend(DIRECT_EXCHANGE_NAME, key, message);
+  }
+
 }

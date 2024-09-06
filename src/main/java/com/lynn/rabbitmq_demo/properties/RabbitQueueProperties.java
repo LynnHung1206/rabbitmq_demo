@@ -1,11 +1,9 @@
 package com.lynn.rabbitmq_demo.properties;
 
-import lombok.Data;
-
 /**
  * @Author: Lynn on 2024/9/6
  */
-public class RabbitProperties {
+public class RabbitQueueProperties {
 
   public static final String SIMPLE_QUEUE_NAME = "simple.queue";
 
@@ -15,5 +13,8 @@ public class RabbitProperties {
 
   public static final String FANOUT_QUEUE_2_NAME = "fanout.queue.2";
 
-  public static final String FANOUT_EXCHANGE_NAME = "fanout.exchange";
+  public static final String DIRECT_QUEUE_1_NAME = "direct.queue.1";
+
+  public static final String DIRECT_QUEUE_2_NAME = "direct.queue.2";
+
 }

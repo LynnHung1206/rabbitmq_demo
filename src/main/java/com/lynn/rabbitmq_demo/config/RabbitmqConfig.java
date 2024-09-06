@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.core.AmqpAdmin;
 import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;
+import org.springframework.amqp.core.DirectExchange;
 import org.springframework.amqp.core.FanoutExchange;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
@@ -12,16 +13,24 @@ import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.event.EventListener;
 
-import static com.lynn.rabbitmq_demo.properties.RabbitProperties.FANOUT_EXCHANGE_NAME;
-import static com.lynn.rabbitmq_demo.properties.RabbitProperties.FANOUT_QUEUE_1_NAME;
-import static com.lynn.rabbitmq_demo.properties.RabbitProperties.FANOUT_QUEUE_2_NAME;
-import static com.lynn.rabbitmq_demo.properties.RabbitProperties.SIMPLE_QUEUE_NAME;
-import static com.lynn.rabbitmq_demo.properties.RabbitProperties.WORK_QUEUE_NAME;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import static com.lynn.rabbitmq_demo.properties.RabbitExchangeProperties.DIRECT_EXCHANGE_NAME;
+import static com.lynn.rabbitmq_demo.properties.RabbitExchangeProperties.FANOUT_EXCHANGE_NAME;
+import static com.lynn.rabbitmq_demo.properties.RabbitQueueProperties.DIRECT_QUEUE_1_NAME;
+import static com.lynn.rabbitmq_demo.properties.RabbitQueueProperties.DIRECT_QUEUE_2_NAME;
+import static com.lynn.rabbitmq_demo.properties.RabbitQueueProperties.FANOUT_QUEUE_1_NAME;
+import static com.lynn.rabbitmq_demo.properties.RabbitQueueProperties.FANOUT_QUEUE_2_NAME;
+import static com.lynn.rabbitmq_demo.properties.RabbitQueueProperties.SIMPLE_QUEUE_NAME;
+import static com.lynn.rabbitmq_demo.properties.RabbitQueueProperties.WORK_QUEUE_NAME;
+import static com.lynn.rabbitmq_demo.properties.RabbitRoutingKeyProperties.ROUTING_KEY_BLUE;
+import static com.lynn.rabbitmq_demo.properties.RabbitRoutingKeyProperties.ROUTING_KEY_RED;
+import static com.lynn.rabbitmq_demo.properties.RabbitRoutingKeyProperties.ROUTING_KEY_YELLOW;
 
 /**
  * @Author: Lynn on 2024/9/4
@@ -77,6 +86,11 @@ public class RabbitmqConfig {
     return new Queue(WORK_QUEUE_NAME);
   }
 
+  /**
+   * ======= fanout =======
+   */
+
+
   @Bean
   public Queue fanoutQueue1() {
     amqpAdmin().deleteQueue(FANOUT_QUEUE_1_NAME);
@@ -88,6 +102,7 @@ public class RabbitmqConfig {
     amqpAdmin().deleteQueue(FANOUT_QUEUE_2_NAME);
     return new Queue(FANOUT_QUEUE_2_NAME);
   }
+
   @Bean
   public FanoutExchange fanoutExchange() {
     amqpAdmin().deleteExchange(FANOUT_EXCHANGE_NAME);
@@ -103,5 +118,56 @@ public class RabbitmqConfig {
   public Binding fanoutBinding2() {
     return BindingBuilder.bind(fanoutQueue2()).to(fanoutExchange());
   }
+
+
+  /**
+   * ======= direct =======
+   */
+
+  @Bean
+  public Queue directQueue1() {
+    return new Queue(DIRECT_QUEUE_1_NAME);
+  }
+
+  @Bean
+  public Queue directQueue2() {
+    return new Queue(DIRECT_QUEUE_2_NAME);
+  }
+
+  @Bean
+  public DirectExchange directExchange() {
+    return new DirectExchange(DIRECT_EXCHANGE_NAME);
+  }
+
+
+  /**
+   * spring 無法處理 List<Binding> 所以手動宣告
+   */
+  @PostConstruct
+  public void declareBindings() {
+    bindDirectQueue1().forEach(bind -> amqpAdmin().declareBinding(bind));
+    bindDirectQueue2().forEach(bind -> amqpAdmin().declareBinding(bind));
+  }
+
+  @Bean
+  public List<Binding> bindDirectQueue1() {
+    List<String> routingKeys = Arrays.asList(ROUTING_KEY_BLUE, ROUTING_KEY_RED);
+    return routingKeys.stream()
+        .map(routingKey -> BindingBuilder.bind(directQueue1())
+            .to(directExchange())
+            .with(routingKey))
+        .collect(Collectors.toList());
+  }
+
+  @Bean
+  public List<Binding> bindDirectQueue2() {
+    List<String> routingKeys = Arrays.asList(ROUTING_KEY_YELLOW, ROUTING_KEY_RED);
+    return routingKeys.stream()
+        .map(routingKey -> BindingBuilder.bind(directQueue2())
+            .to(directExchange())
+            .with(routingKey))
+        .collect(Collectors.toList());
+  }
+
 
 }

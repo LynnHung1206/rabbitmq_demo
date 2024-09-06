@@ -5,10 +5,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
 
-import static com.lynn.rabbitmq_demo.properties.RabbitProperties.FANOUT_QUEUE_1_NAME;
-import static com.lynn.rabbitmq_demo.properties.RabbitProperties.FANOUT_QUEUE_2_NAME;
-import static com.lynn.rabbitmq_demo.properties.RabbitProperties.SIMPLE_QUEUE_NAME;
-import static com.lynn.rabbitmq_demo.properties.RabbitProperties.WORK_QUEUE_NAME;
+import static com.lynn.rabbitmq_demo.properties.RabbitQueueProperties.DIRECT_QUEUE_1_NAME;
+import static com.lynn.rabbitmq_demo.properties.RabbitQueueProperties.DIRECT_QUEUE_2_NAME;
+import static com.lynn.rabbitmq_demo.properties.RabbitQueueProperties.FANOUT_QUEUE_1_NAME;
+import static com.lynn.rabbitmq_demo.properties.RabbitQueueProperties.FANOUT_QUEUE_2_NAME;
+import static com.lynn.rabbitmq_demo.properties.RabbitQueueProperties.SIMPLE_QUEUE_NAME;
+import static com.lynn.rabbitmq_demo.properties.RabbitQueueProperties.WORK_QUEUE_NAME;
 
 /**
  * @Author: Lynn on 2024/9/5
@@ -42,5 +44,14 @@ public class RabbitTestListener {
   @RabbitListener(queues = FANOUT_QUEUE_2_NAME)
   public void consumeFanout2(String requestPayload) {
     System.out.println("this is fanout queue 2 requestPayload = " + requestPayload);
+  }
+
+  @RabbitListener(queues = DIRECT_QUEUE_1_NAME)
+  public void consumeDirect1(String requestPayload) {
+    System.out.println("this is direct queue 1 requestPayload = " + requestPayload);
+  }
+  @RabbitListener(queues = DIRECT_QUEUE_2_NAME)
+  public void consumeDirect2(String requestPayload) {
+    System.out.println("this is direct queue 2 requestPayload = " + requestPayload);
   }
 }

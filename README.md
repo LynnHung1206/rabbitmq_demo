@@ -6,6 +6,6 @@
 
 ### exchange
 - Fanout: 會將消息分給每個人（廣播）
-- direct
+- direct: 根據規則(binding key)路由到指定 queue
 - topic
 
