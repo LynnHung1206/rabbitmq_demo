@@ -14,6 +14,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.event.EventListener;
 
+import static com.lynn.rabbitmq_demo.properties.RabbitProperties.SIMPLE_QUEUE_NAME;
+import static com.lynn.rabbitmq_demo.properties.RabbitProperties.WORK_QUEUE_NAME;
+
 /**
  * @Author: Lynn on 2024/9/4
  */
@@ -55,7 +58,8 @@ public class RabbitmqConfig {
 //  @EventListener(ApplicationReadyEvent.class)
   @PostConstruct
   public void insideRabbitInit() {
-    amqpAdmin().declareQueue(new Queue("test.queue"));
+    amqpAdmin().declareQueue(new Queue(SIMPLE_QUEUE_NAME));
+    amqpAdmin().declareQueue(new Queue(WORK_QUEUE_NAME));
   }
 
 
