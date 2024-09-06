@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
 
+import static com.lynn.rabbitmq_demo.properties.RabbitProperties.FANOUT_EXCHANGE_NAME;
 import static com.lynn.rabbitmq_demo.properties.RabbitProperties.SIMPLE_QUEUE_NAME;
 import static com.lynn.rabbitmq_demo.properties.RabbitProperties.WORK_QUEUE_NAME;
 
@@ -38,6 +39,15 @@ public class SendController {
     System.out.println("message = " + message);
     for (int i = 0; i < 30; i++) {
       rabbitTemplate.convertAndSend(WORK_QUEUE_NAME, message + "--" + i);
+      Thread.sleep(20);
+    }
+  }
+
+  @RequestMapping(value = "/fanout", method = {RequestMethod.GET, RequestMethod.POST})
+  public void sendFanoutMessage(@RequestBody Map<String, String> map) throws InterruptedException {
+    String message = MapUtils.getString(map, "message");
+    for (int i = 0; i < 30; i++) {
+      rabbitTemplate.convertAndSend(FANOUT_EXCHANGE_NAME, "",message + "--" + i);
       Thread.sleep(20);
     }
   }
