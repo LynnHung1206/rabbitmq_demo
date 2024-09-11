@@ -13,7 +13,9 @@ import java.util.Map;
 
 import static com.lynn.rabbitmq_demo.properties.RabbitExchangeProperties.DIRECT_EXCHANGE_NAME;
 import static com.lynn.rabbitmq_demo.properties.RabbitExchangeProperties.FANOUT_EXCHANGE_NAME;
+import static com.lynn.rabbitmq_demo.properties.RabbitExchangeProperties.TOPIC_EXCHANGE_NAME;
 import static com.lynn.rabbitmq_demo.properties.RabbitQueueProperties.SIMPLE_QUEUE_NAME;
+import static com.lynn.rabbitmq_demo.properties.RabbitQueueProperties.TOPIC_QUEUE_1_NAME;
 import static com.lynn.rabbitmq_demo.properties.RabbitQueueProperties.WORK_QUEUE_NAME;
 
 /**
@@ -55,6 +57,13 @@ public class SendController {
     String message = MapUtils.getString(map, "message");
     String key = MapUtils.getString(map, "key");
     rabbitTemplate.convertAndSend(DIRECT_EXCHANGE_NAME, key, message);
+  }
+
+  @RequestMapping(value = "/topic", method = {RequestMethod.GET, RequestMethod.POST})
+  public void sendTopicMessage(@RequestBody Map<String, String> map) {
+    String message = MapUtils.getString(map, "message");
+    String key = MapUtils.getString(map, "key");
+    rabbitTemplate.convertAndSend(TOPIC_EXCHANGE_NAME, key, message);
   }
 
 }

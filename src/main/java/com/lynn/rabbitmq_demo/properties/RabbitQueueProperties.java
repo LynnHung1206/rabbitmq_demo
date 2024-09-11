@@ -17,4 +17,8 @@ public class RabbitQueueProperties {
 
   public static final String DIRECT_QUEUE_2_NAME = "direct.queue.2";
 
+  public static final String TOPIC_QUEUE_1_NAME = "topic.queue.1";
+
+  public static final String TOPIC_QUEUE_2_NAME = "topic.queue.2";
+
 }

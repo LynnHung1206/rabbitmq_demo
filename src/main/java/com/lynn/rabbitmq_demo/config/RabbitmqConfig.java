@@ -8,6 +8,7 @@ import org.springframework.amqp.core.BindingBuilder;
 import org.springframework.amqp.core.DirectExchange;
 import org.springframework.amqp.core.FanoutExchange;
 import org.springframework.amqp.core.Queue;
+import org.springframework.amqp.core.TopicExchange;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
@@ -22,13 +23,18 @@ import java.util.stream.Collectors;
 
 import static com.lynn.rabbitmq_demo.properties.RabbitExchangeProperties.DIRECT_EXCHANGE_NAME;
 import static com.lynn.rabbitmq_demo.properties.RabbitExchangeProperties.FANOUT_EXCHANGE_NAME;
+import static com.lynn.rabbitmq_demo.properties.RabbitExchangeProperties.TOPIC_EXCHANGE_NAME;
 import static com.lynn.rabbitmq_demo.properties.RabbitQueueProperties.DIRECT_QUEUE_1_NAME;
 import static com.lynn.rabbitmq_demo.properties.RabbitQueueProperties.DIRECT_QUEUE_2_NAME;
 import static com.lynn.rabbitmq_demo.properties.RabbitQueueProperties.FANOUT_QUEUE_1_NAME;
 import static com.lynn.rabbitmq_demo.properties.RabbitQueueProperties.FANOUT_QUEUE_2_NAME;
 import static com.lynn.rabbitmq_demo.properties.RabbitQueueProperties.SIMPLE_QUEUE_NAME;
+import static com.lynn.rabbitmq_demo.properties.RabbitQueueProperties.TOPIC_QUEUE_1_NAME;
+import static com.lynn.rabbitmq_demo.properties.RabbitQueueProperties.TOPIC_QUEUE_2_NAME;
 import static com.lynn.rabbitmq_demo.properties.RabbitQueueProperties.WORK_QUEUE_NAME;
 import static com.lynn.rabbitmq_demo.properties.RabbitRoutingKeyProperties.ROUTING_KEY_BLUE;
+import static com.lynn.rabbitmq_demo.properties.RabbitRoutingKeyProperties.ROUTING_KEY_BOY;
+import static com.lynn.rabbitmq_demo.properties.RabbitRoutingKeyProperties.ROUTING_KEY_CHILD;
 import static com.lynn.rabbitmq_demo.properties.RabbitRoutingKeyProperties.ROUTING_KEY_RED;
 import static com.lynn.rabbitmq_demo.properties.RabbitRoutingKeyProperties.ROUTING_KEY_YELLOW;
 
@@ -169,5 +175,38 @@ public class RabbitmqConfig {
         .collect(Collectors.toList());
   }
 
+  /**
+   * ======= topic =======
+   */
 
+  @Bean
+  public Queue topicQueue1() {
+    return new Queue(TOPIC_QUEUE_1_NAME);
+  }
+
+  @Bean
+  public Queue topicQueue2() {
+    return new Queue(TOPIC_QUEUE_2_NAME);
+  }
+
+  @Bean
+  public TopicExchange topicExchange() {
+    return new TopicExchange(TOPIC_EXCHANGE_NAME);
+  }
+
+  @Bean
+  public Binding topicBinding1() {
+    return BindingBuilder
+        .bind(topicQueue1())
+        .to(topicExchange())
+        .with(ROUTING_KEY_CHILD);
+  }
+
+  @Bean
+  public Binding topicBinding2() {
+    return BindingBuilder
+        .bind(topicQueue2())
+        .to(topicExchange())
+        .with(ROUTING_KEY_BOY);
+  }
 }

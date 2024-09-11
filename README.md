@@ -8,4 +8,8 @@
 - Fanout: 會將消息分給每個人（廣播）
 - direct: 根據規則(binding key)路由到指定 queue
 - topic: 類似 direct,但 routing key 可以為多個單字的列表, 以 `.` 分隔, binding key 可使用通配符 `#`:代指0或多個單字, `*`:代指1個單字
-
+    + xxx.# (以xxx.開頭的所有都會被綁定)
+    + #.xxx (.xxx結尾的都會被綁定)
+    + #.# 所有消息
+    + `#` 可為多個單字，`*` 只一個單字
+    + child.* 的話， child.boy.good 不行，child.#則可以

@@ -10,6 +10,8 @@ import static com.lynn.rabbitmq_demo.properties.RabbitQueueProperties.DIRECT_QUE
 import static com.lynn.rabbitmq_demo.properties.RabbitQueueProperties.FANOUT_QUEUE_1_NAME;
 import static com.lynn.rabbitmq_demo.properties.RabbitQueueProperties.FANOUT_QUEUE_2_NAME;
 import static com.lynn.rabbitmq_demo.properties.RabbitQueueProperties.SIMPLE_QUEUE_NAME;
+import static com.lynn.rabbitmq_demo.properties.RabbitQueueProperties.TOPIC_QUEUE_1_NAME;
+import static com.lynn.rabbitmq_demo.properties.RabbitQueueProperties.TOPIC_QUEUE_2_NAME;
 import static com.lynn.rabbitmq_demo.properties.RabbitQueueProperties.WORK_QUEUE_NAME;
 
 /**
@@ -53,5 +55,14 @@ public class RabbitTestListener {
   @RabbitListener(queues = DIRECT_QUEUE_2_NAME)
   public void consumeDirect2(String requestPayload) {
     System.out.println("this is direct queue 2 requestPayload = " + requestPayload);
+  }
+
+  @RabbitListener(queues = TOPIC_QUEUE_1_NAME)
+  public void consumeTopic1(String requestPayload) {
+    System.out.println("this is topic queue 1 requestPayload = " + requestPayload);
+  }
+  @RabbitListener(queues = TOPIC_QUEUE_2_NAME)
+  public void consumeTopic2(String requestPayload) {
+    System.out.println("this is topic queue 2 requestPayload = " + requestPayload);
   }
 }
