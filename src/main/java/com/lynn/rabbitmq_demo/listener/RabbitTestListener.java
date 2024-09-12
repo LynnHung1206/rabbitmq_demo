@@ -2,6 +2,10 @@ package com.lynn.rabbitmq_demo.listener;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.core.ExchangeTypes;
+import org.springframework.amqp.rabbit.annotation.Exchange;
+import org.springframework.amqp.rabbit.annotation.Queue;
+import org.springframework.amqp.rabbit.annotation.QueueBinding;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
 
@@ -13,6 +17,8 @@ import static com.lynn.rabbitmq_demo.properties.RabbitQueueProperties.SIMPLE_QUE
 import static com.lynn.rabbitmq_demo.properties.RabbitQueueProperties.TOPIC_QUEUE_1_NAME;
 import static com.lynn.rabbitmq_demo.properties.RabbitQueueProperties.TOPIC_QUEUE_2_NAME;
 import static com.lynn.rabbitmq_demo.properties.RabbitQueueProperties.WORK_QUEUE_NAME;
+import static com.lynn.rabbitmq_demo.properties.RabbitRoutingKeyProperties.ROUTING_KEY_BLUE;
+import static com.lynn.rabbitmq_demo.properties.RabbitRoutingKeyProperties.ROUTING_KEY_BOY;
 
 /**
  * @Author: Lynn on 2024/9/5
@@ -52,6 +58,7 @@ public class RabbitTestListener {
   public void consumeDirect1(String requestPayload) {
     System.out.println("this is direct queue 1 requestPayload = " + requestPayload);
   }
+
   @RabbitListener(queues = DIRECT_QUEUE_2_NAME)
   public void consumeDirect2(String requestPayload) {
     System.out.println("this is direct queue 2 requestPayload = " + requestPayload);
@@ -61,8 +68,22 @@ public class RabbitTestListener {
   public void consumeTopic1(String requestPayload) {
     System.out.println("this is topic queue 1 requestPayload = " + requestPayload);
   }
+
   @RabbitListener(queues = TOPIC_QUEUE_2_NAME)
   public void consumeTopic2(String requestPayload) {
     System.out.println("this is topic queue 2 requestPayload = " + requestPayload);
+  }
+
+  /**
+   * 基於 annotation 的聲明 會在 @Bean 之後
+   *
+   * @param requestPayload
+   */
+  @RabbitListener(bindings = @QueueBinding(
+      value = @Queue(name = "now.declare", durable = "true"),
+      exchange = @Exchange(name = "now.declare.exchange", type = ExchangeTypes.DIRECT, durable = "true"),
+      key = {ROUTING_KEY_BLUE, ROUTING_KEY_BOY}))
+  public void consumeAnnotaion(String requestPayload) {
+    System.out.println("this is annotation queue 1 requestPayload = " + requestPayload);
   }
 }

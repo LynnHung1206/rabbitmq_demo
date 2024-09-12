@@ -13,3 +13,14 @@
     + #.# 所有消息
     + `#` 可為多個單字，`*` 只一個單字
     + child.* 的話， child.boy.good 不行，child.#則可以
+- CustomExchange: 自定義的 exchange，當預設的 exchange 無法滿足需求可自定義，需繼承 `CustomExchange`實作
+  - HeadersExchange: 根據 headers 來路由，不依賴 routingKey，可指定一組 headers
+    + ```java
+      HeadersExchange headersExchange = new HeadersExchange("myHeadersExchange");
+      Queue queue = new Queue("myQueue");
+      // 綁定佇列時，指定需要匹配的 headers
+      Map<String, Object> headers = new HashMap<>();
+        headers.put("format", "xxx");
+        headers.put("x-match", "all");
+      Binding binding = BindingBuilder.bind(queue).to(headersExchange).whereAll(headers).match();
+      ``` 

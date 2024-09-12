@@ -5,9 +5,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.core.AmqpAdmin;
 import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;
+import org.springframework.amqp.core.CustomExchange;
 import org.springframework.amqp.core.DirectExchange;
+import org.springframework.amqp.core.ExchangeBuilder;
 import org.springframework.amqp.core.FanoutExchange;
 import org.springframework.amqp.core.Queue;
+import org.springframework.amqp.core.QueueBuilder;
 import org.springframework.amqp.core.TopicExchange;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
@@ -186,11 +189,13 @@ public class RabbitmqConfig {
 
   @Bean
   public Queue topicQueue2() {
-    return new Queue(TOPIC_QUEUE_2_NAME);
+//    return QueueBuilder.durable(TOPIC_QUEUE_2_NAME).build(); 宣告持久化隊列
+    return new Queue(TOPIC_QUEUE_2_NAME);// 默認為持久化隊列
   }
 
   @Bean
   public TopicExchange topicExchange() {
+//    return ExchangeBuilder.topicExchange(TOPIC_EXCHANGE_NAME).build();
     return new TopicExchange(TOPIC_EXCHANGE_NAME);
   }
 
