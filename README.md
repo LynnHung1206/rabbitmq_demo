@@ -2,7 +2,7 @@
 
 ### work queue
 讓多個消費者綁定到一個 queue，共同消費隊列消息。
-默認為輪詢，如果怕有消息堆積，請至 `application.properties` 設定 prefetch=1 意為消費完消息才會再拿下一條
+default 為輪詢，如果怕有消息堆積，請至 `application.properties` 設定 prefetch=1 意為消費完消息才會再拿下一條
 
 ### exchange
 - Fanout: 會將消息分給每個人（廣播）
@@ -24,3 +24,7 @@
       headers.put("x-match", "all");
     Binding binding = BindingBuilder.bind(queue).to(headersExchange).whereAll(headers).match();
     ``` 
+
+### message 
+不要使用 default 的 SimpleMessageConverter，有可能會有序列化上的問題，如果需要在 server 端查看也會無法閱讀，
+可以使用 jackson 轉換為 String，監聽器接收後再行處理

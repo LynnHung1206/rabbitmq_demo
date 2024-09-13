@@ -1,6 +1,8 @@
 package com.lynn.rabbitmq_demo.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.MapUtils;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -15,7 +17,6 @@ import static com.lynn.rabbitmq_demo.properties.RabbitExchangeProperties.DIRECT_
 import static com.lynn.rabbitmq_demo.properties.RabbitExchangeProperties.FANOUT_EXCHANGE_NAME;
 import static com.lynn.rabbitmq_demo.properties.RabbitExchangeProperties.TOPIC_EXCHANGE_NAME;
 import static com.lynn.rabbitmq_demo.properties.RabbitQueueProperties.SIMPLE_QUEUE_NAME;
-import static com.lynn.rabbitmq_demo.properties.RabbitQueueProperties.TOPIC_QUEUE_1_NAME;
 import static com.lynn.rabbitmq_demo.properties.RabbitQueueProperties.WORK_QUEUE_NAME;
 
 /**
@@ -28,6 +29,8 @@ import static com.lynn.rabbitmq_demo.properties.RabbitQueueProperties.WORK_QUEUE
 public class SendController {
 
   private final RabbitTemplate rabbitTemplate;
+
+  private static ObjectMapper objectMapper = new ObjectMapper();
 
   @RequestMapping(value = "/simple", method = {RequestMethod.GET, RequestMethod.POST})
   public void sendSimpleMessage(@RequestBody Map<String, String> map) {
@@ -60,10 +63,12 @@ public class SendController {
   }
 
   @RequestMapping(value = "/topic", method = {RequestMethod.GET, RequestMethod.POST})
+  @SneakyThrows
   public void sendTopicMessage(@RequestBody Map<String, String> map) {
     String message = MapUtils.getString(map, "message");
     String key = MapUtils.getString(map, "key");
-    rabbitTemplate.convertAndSend(TOPIC_EXCHANGE_NAME, key, message);
+    String mapStr = objectMapper.writeValueAsString(map);
+    rabbitTemplate.convertAndSend(TOPIC_EXCHANGE_NAME, key, mapStr);
   }
 
 }
