@@ -25,6 +25,6 @@ default 為輪詢，如果怕有消息堆積，請至 `application.properties` �
     Binding binding = BindingBuilder.bind(queue).to(headersExchange).whereAll(headers).match();
     ``` 
 
-### message 
+### message convert
 不要使用 default 的 SimpleMessageConverter，有可能會有序列化上的問題，如果需要在 server 端查看也會無法閱讀，
 可以使用 jackson 轉換為 String，監聽器接收後再行處理
