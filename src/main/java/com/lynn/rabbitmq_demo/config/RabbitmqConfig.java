@@ -1,5 +1,7 @@
 package com.lynn.rabbitmq_demo.config;
 
+import com.lynn.rabbitmq_demo.dto.CustomCorrelationData;
+import com.lynn.rabbitmq_demo.helper.MessageResendHelper;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.core.AmqpAdmin;
@@ -11,6 +13,7 @@ import org.springframework.amqp.core.ExchangeBuilder;
 import org.springframework.amqp.core.FanoutExchange;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.core.QueueBuilder;
+import org.springframework.amqp.core.ReturnedMessage;
 import org.springframework.amqp.core.TopicExchange;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
@@ -18,9 +21,13 @@ import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.amqp.support.converter.MessageConverter;
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.scheduling.annotation.EnableAsync;
 
 import java.util.Arrays;
 import java.util.List;
@@ -48,6 +55,7 @@ import static com.lynn.rabbitmq_demo.properties.RabbitRoutingKeyProperties.ROUTI
  */
 @Configuration
 @Slf4j
+@EnableAsync
 public class RabbitmqConfig {
   @Value("${spring.rabbitmq.host}")
   private String HOST;
@@ -68,17 +76,49 @@ public class RabbitmqConfig {
     connectionFactory.setPort(POST);
     connectionFactory.setUsername(USERNAME);
     connectionFactory.setPassword(PASSWORD);
+    connectionFactory.setPublisherReturns(true);
+    connectionFactory.setPublisherConfirmType(CachingConnectionFactory.ConfirmType.CORRELATED);
     return connectionFactory;
   }
 
   @Bean
   RabbitTemplate rabbitTemplate() {
-    return new RabbitTemplate(rabbitConnectionFactory());
+    RabbitTemplate rabbitTemplate = new RabbitTemplate(rabbitConnectionFactory());
+    rabbitTemplate.setMandatory(true);// 會把消息還給生產者
+    rabbitTemplate.setReturnsCallback(returned -> {
+      System.out.println("ReturnCallback:" + "msg：" + returned.getMessage());
+      System.out.println("ReturnCallback:" + "replyCode：" + returned.getReplyCode());
+      System.out.println("ReturnCallback:" + "text：" + returned.getReplyText());
+      System.out.println("ReturnCallback:" + "exchange：" + returned.getExchange());
+      System.out.println("ReturnCallback:" + "key：" + returned.getRoutingKey());
+    });
+
+    rabbitTemplate.setConfirmCallback((correlationData, ack, cause) -> {
+      if (correlationData instanceof CustomCorrelationData data) {
+        if (ack) {
+          log.info("Message confirmed");
+          log.info("correlationData={}", data);
+          log.info("cause={}", cause);
+        } else {
+          log.error("Message not confirmed: " + cause);
+          log.info("start to retry data={}", data);
+          messageResendHelper().resendMessage(data);
+        }
+      }
+
+    });
+
+    return rabbitTemplate;
   }
 
   @Bean
   AmqpAdmin amqpAdmin() {
     return new RabbitAdmin(rabbitConnectionFactory());
+  }
+
+  @Bean
+  public MessageResendHelper messageResendHelper() {
+    return new MessageResendHelper(rabbitTemplate());
   }
 
 
@@ -216,4 +256,6 @@ public class RabbitmqConfig {
         .to(topicExchange())
         .with(ROUTING_KEY_BOY);
   }
+
+
 }

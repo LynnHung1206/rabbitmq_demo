@@ -1,6 +1,7 @@
 package com.lynn.rabbitmq_demo.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.lynn.rabbitmq_demo.dto.CustomCorrelationData;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
+import java.util.UUID;
 
 import static com.lynn.rabbitmq_demo.properties.RabbitExchangeProperties.DIRECT_EXCHANGE_NAME;
 import static com.lynn.rabbitmq_demo.properties.RabbitExchangeProperties.FANOUT_EXCHANGE_NAME;
@@ -68,7 +70,9 @@ public class SendController {
     String message = MapUtils.getString(map, "message");
     String key = MapUtils.getString(map, "key");
     String mapStr = objectMapper.writeValueAsString(map);
-    rabbitTemplate.convertAndSend(TOPIC_EXCHANGE_NAME, key, mapStr);
+
+    rabbitTemplate.convertAndSend(TOPIC_EXCHANGE_NAME, key, mapStr, new CustomCorrelationData(UUID.randomUUID().toString(),TOPIC_EXCHANGE_NAME,key,mapStr));
   }
+
 
 }
