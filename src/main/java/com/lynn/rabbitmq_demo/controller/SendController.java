@@ -32,7 +32,7 @@ public class SendController {
 
   private final RabbitTemplate rabbitTemplate;
 
-  private static ObjectMapper objectMapper = new ObjectMapper();
+  private static final ObjectMapper objectMapper = new ObjectMapper();
 
   @RequestMapping(value = "/simple", method = {RequestMethod.GET, RequestMethod.POST})
   public void sendSimpleMessage(@RequestBody Map<String, String> map) {

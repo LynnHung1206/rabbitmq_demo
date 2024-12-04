@@ -2,11 +2,17 @@ package com.lynn.rabbitmq_demo.listener;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.mybatis.spring.MyBatisSystemException;
 import org.springframework.amqp.core.ExchangeTypes;
+import org.springframework.amqp.rabbit.annotation.Argument;
 import org.springframework.amqp.rabbit.annotation.Exchange;
 import org.springframework.amqp.rabbit.annotation.Queue;
 import org.springframework.amqp.rabbit.annotation.QueueBinding;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.amqp.rabbit.retry.ImmediateRequeueMessageRecoverer;
+import org.springframework.amqp.rabbit.retry.RejectAndDontRequeueRecoverer;
+import org.springframework.amqp.rabbit.retry.RepublishMessageRecoverer;
+import org.springframework.messaging.converter.MessageConversionException;
 import org.springframework.stereotype.Component;
 
 import static com.lynn.rabbitmq_demo.properties.RabbitQueueProperties.DIRECT_QUEUE_1_NAME;
@@ -31,6 +37,8 @@ public class RabbitTestListener {
   @RabbitListener(queues = SIMPLE_QUEUE_NAME)
   public void consumeSimpleMsg(String requestPayload) {
     System.out.println("this is simple queue requestPayload = " + requestPayload);
+//    log.error("success@@@@@@@@@");
+    throw new MyBatisSystemException(new Exception("XXXXX"));
   }
 
   @RabbitListener(queues = WORK_QUEUE_NAME)
@@ -75,7 +83,7 @@ public class RabbitTestListener {
   }
 
   /**
-   * 基於 annotation 的聲明 會在 @Bean 之後
+   * 基於 annotation 的聲明 會在 @Bean 之後 一樣只會建一次
    *
    * @param requestPayload
    */
@@ -83,7 +91,16 @@ public class RabbitTestListener {
       value = @Queue(name = "now.declare", durable = "true"),
       exchange = @Exchange(name = "now.declare.exchange", type = ExchangeTypes.DIRECT, durable = "true"),
       key = {ROUTING_KEY_BLUE, ROUTING_KEY_BOY}))
-  public void consumeAnnotaion(String requestPayload) {
+  public void consumeAnnotation(String requestPayload) {
     System.out.println("this is annotation queue 1 requestPayload = " + requestPayload);
+  }
+
+  @RabbitListener(queuesToDeclare = @Queue(
+      name = "lazy.queue",
+      durable = "true",
+      arguments = @Argument(name = "x-queue-mode",value = "lazy")
+  ))
+  public void consumeLazyQueue(String requestPayload){
+    System.out.println("this is lazy queue  requestPayload = " + requestPayload);
   }
 }

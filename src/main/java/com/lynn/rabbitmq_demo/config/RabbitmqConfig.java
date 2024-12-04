@@ -76,37 +76,39 @@ public class RabbitmqConfig {
     connectionFactory.setPort(POST);
     connectionFactory.setUsername(USERNAME);
     connectionFactory.setPassword(PASSWORD);
-    connectionFactory.setPublisherReturns(true);
-    connectionFactory.setPublisherConfirmType(CachingConnectionFactory.ConfirmType.CORRELATED);
+    /** 開啟會讓速度變慢 */
+//    connectionFactory.setPublisherReturns(true);
+//    connectionFactory.setPublisherConfirmType(CachingConnectionFactory.ConfirmType.CORRELATED);
     return connectionFactory;
   }
 
   @Bean
   RabbitTemplate rabbitTemplate() {
     RabbitTemplate rabbitTemplate = new RabbitTemplate(rabbitConnectionFactory());
-    rabbitTemplate.setMandatory(true);// 會把消息還給生產者
-    rabbitTemplate.setReturnsCallback(returned -> {
-      System.out.println("ReturnCallback:" + "msg：" + returned.getMessage());
-      System.out.println("ReturnCallback:" + "replyCode：" + returned.getReplyCode());
-      System.out.println("ReturnCallback:" + "text：" + returned.getReplyText());
-      System.out.println("ReturnCallback:" + "exchange：" + returned.getExchange());
-      System.out.println("ReturnCallback:" + "key：" + returned.getRoutingKey());
-    });
+//    rabbitTemplate.setMandatory(true);// 會把消息還給生產者
 
-    rabbitTemplate.setConfirmCallback((correlationData, ack, cause) -> {
-      if (correlationData instanceof CustomCorrelationData data) {
-        if (ack) {
-          log.info("Message confirmed");
-          log.info("correlationData={}", data);
-          log.info("cause={}", cause);
-        } else {
-          log.error("Message not confirmed: " + cause);
-          log.info("start to retry data={}", data);
-          messageResendHelper().resendMessage(data);
-        }
-      }
+//    rabbitTemplate.setReturnsCallback(returned -> {
+//      System.out.println("ReturnCallback:" + "msg：" + returned.getMessage());
+//      System.out.println("ReturnCallback:" + "replyCode：" + returned.getReplyCode());
+//      System.out.println("ReturnCallback:" + "text：" + returned.getReplyText());
+//      System.out.println("ReturnCallback:" + "exchange：" + returned.getExchange());
+//      System.out.println("ReturnCallback:" + "key：" + returned.getRoutingKey());
+//    });
 
-    });
+//    rabbitTemplate.setConfirmCallback((correlationData, ack, cause) -> {
+//      if (correlationData instanceof CustomCorrelationData data) {
+//        if (ack) {
+//          log.info("Message confirmed");
+//          log.info("correlationData={}", data);
+//          log.info("cause={}", cause);
+//        } else {
+//          log.error("Message not confirmed: " + cause);
+//          log.info("start to retry data={}", data);
+//          messageResendHelper().resendMessage(data);
+//        }
+//      }
+//
+//    });
 
     return rabbitTemplate;
   }
@@ -137,6 +139,17 @@ public class RabbitmqConfig {
     return new Queue(WORK_QUEUE_NAME);
   }
 
+  /**
+   * 只演示 現在預設都是
+   * @return
+   */
+  @Bean
+  public Queue lazyQueue(){
+    return QueueBuilder
+        .durable("lazyQ")
+        .lazy()
+        .build();
+  }
   /**
    * ======= fanout =======
    */

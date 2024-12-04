@@ -30,12 +30,35 @@ default 為輪詢，如果怕有消息堆積，請至 `application.properties` �
 可以使用 jackson 轉換為 String，監聽器接收後再行處理
 
 ### 可靠性
-- producer
+- producer : 會額外消耗網路及系統資源，可以不使用，如需使用，可使用 callback 即，return通常是開發者層面的問題
   + producer reconnect:在 `application.properties` 做設定，要注意此為阻塞式設計，會阻塞當前執行序，慎用並合理配置 這只是連接失敗的重試，並非消息失敗的重試
   + producer acknowledgement(ack)
-    + 失敗會返回 nack 
+    + 失敗會返回 nack，可針對此作 `有限次數` 的重試
     +  `application.properties` 設定
     + 消息失敗可以設定重試
     + 每個 rabbitTemplate 只能設定一個 ReturnCallback，在啟動時設定
-- mq
+    + 慎用 速度會變慢
+  - mq
+    + 數據持久化
+      + 存 memory
+    + Lazy Queue
+      + 存 disk （memory只留最近的消息 預設2048）
+      + 消費者消費消息才會讀取 disk 並加載到 memory
+      + 支持數百萬條消息儲存
+      + 3.12 版後 全部的隊列都是這個
+      + 速度會稍慢
+      + 開啟持久化和生產者確認，會在持久化完成後返回ack
 - consumer
+  - 確認機制 -> spring 已實作
+    - ack : 成功處理，rabbitmq 自隊列刪除
+    - nack: 處理失敗，需再次投遞
+    - reject: 處理失敗並且拒絕該消息，rabbitmq 自隊列刪除（有問題的消息）-> 消息轉換異常會出現（MessageConversionException）  
+  - 可選：
+    - none
+    - manual 手動處理
+    - auto
+  - 失敗處理
+    - 失敗重試機制
+      - RejectAndDontRequeueRecoverer : 重試耗盡後，直接 reject & 丟棄 
+      - ImmediateRequeueMessageRecoverer : 重試耗盡後，返回 NACK，消息重新入隊
+      - RepublishMessageRecoverer : 重試耗盡後，將失敗消息投到指定的交換機
