@@ -17,12 +17,16 @@ ENV SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/test \
     SPRING_RABBITMQ_PORT=5672 \
     SPRING_RABBITMQ_USERNAME=root \
     SPRING_RABBITMQ_PASSWORD=root123 \
-    TZ="Asia/Taipei" \
-    JAVA_OPS="-Xms256M -Xmx4096M"
+    TZ="Asia/Taipei"
+
+# Set Java options separately
+ENV JAVA_OPTS="-Xms256M -Xmx4096M"
 
 
 # 暴露應用程序端口
 EXPOSE 8083
-
+# Add pg_isready to test connection
+RUN apt-get update && apt-get install -y postgresql-client
 # 啟動應用程序
-ENTRYPOINT ["java", "${JAVA_OPS}","-jar", "rabbitmq-demo.jar"]
+ENTRYPOINT until pg_isready -h postgres -p 5432 -U postgres; do sleep 1; done && \
+          java $JAVA_OPTS -jar rabbitmq-demo.jar
